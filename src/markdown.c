@@ -61,7 +61,7 @@ struct footnote_ref {
 
 	int is_used;
 	unsigned int num;
-	
+
 	struct buf *contents;
 };
 
@@ -264,9 +264,9 @@ create_footnote_ref(struct footnote_list *list, const uint8_t *name, size_t name
 	struct footnote_ref *ref = calloc(1, sizeof(struct footnote_ref));
 	if (!ref)
 		return NULL;
-	
+
 	ref->id = hash_link_ref(name, name_size);
-	
+
 	return ref;
 }
 
@@ -277,7 +277,7 @@ add_footnote_ref(struct footnote_list *list, struct footnote_ref *ref)
 	if (!item)
 		return 0;
 	item->ref = ref;
-	
+
 	if (list->head == NULL) {
 		list->head = list->tail = item;
 	} else {
@@ -285,7 +285,7 @@ add_footnote_ref(struct footnote_list *list, struct footnote_ref *ref)
 		list->tail = item;
 	}
 	list->count++;
-	
+
 	return 1;
 }
 
@@ -294,15 +294,15 @@ find_footnote_ref(struct footnote_list *list, uint8_t *name, size_t length)
 {
 	unsigned int hash = hash_link_ref(name, length);
 	struct footnote_item *item = NULL;
-	
+
 	item = list->head;
-	
+
 	while (item != NULL) {
 		if (item->ref->id == hash)
 			return item->ref;
 		item = item->next;
 	}
-	
+
 	return NULL;
 }
 
@@ -318,7 +318,7 @@ free_footnote_list(struct footnote_list *list, int free_refs)
 {
 	struct footnote_item *item = list->head;
 	struct footnote_item *next;
-	
+
 	while (item) {
 		next = item->next;
 		if (free_refs)
@@ -974,7 +974,7 @@ char_link(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t offset
 
 	txt_e = i;
 	i++;
-	
+
 	/* footnote link */
 	if (rndr->ext_flags & MKDEXT_FOOTNOTES && data[1] == '^') {
 		if (txt_e < 3)
@@ -985,9 +985,9 @@ char_link(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t offset
 		
 		id.data = data + 2;
 		id.size = txt_e - 2;
-		
+
 		fr = find_footnote_ref(&rndr->footnotes_found, id.data, id.size);
-		
+
 		/* mark footnote used */
 		if (fr && !fr->is_used) {
 			if(!add_footnote_ref(&rndr->footnotes_used, fr))
@@ -995,11 +995,11 @@ char_link(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t offset
 			fr->is_used = 1;
 			fr->num = rndr->footnotes_used.count;
 		}
-		
+
 		/* render */
 		if (fr && rndr->cb.footnote_ref)
 				ret = rndr->cb.footnote_ref(ob, fr->num, rndr->opaque);
-		
+
 		goto cleanup;
 	}
 
@@ -1949,9 +1949,9 @@ parse_footnote_def(struct buf *ob, struct sd_markdown *rndr, unsigned int num, u
 {
 	struct buf *work = 0;
 	work = rndr_newbuf(rndr, BUFFER_SPAN);
-	
+
 	parse_block(work, rndr, data, size);
-	
+
 	if (rndr->cb.footnote_def)
 	rndr->cb.footnote_def(ob, work, num, rndr->opaque);
 	rndr_popbuf(rndr, BUFFER_SPAN);
@@ -1964,19 +1964,19 @@ parse_footnote_list(struct buf *ob, struct sd_markdown *rndr, struct footnote_li
 	struct buf *work = 0;
 	struct footnote_item *item;
 	struct footnote_ref *ref;
-	
+
 	if (footnotes->count == 0)
 		return;
-	
+
 	work = rndr_newbuf(rndr, BUFFER_BLOCK);
-	
+
 	item = footnotes->head;
 	while (item) {
 		ref = item->ref;
 		parse_footnote_def(work, rndr, ref->num, ref->contents->data, ref->contents->size);
 		item = item->next;
 	}
-	
+
 	if (rndr->cb.footnotes)
 		rndr->cb.footnotes(ob, work, rndr->opaque);
 	rndr_popbuf(rndr, BUFFER_BLOCK);
@@ -2421,9 +2421,9 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 	size_t ind = 0;
 	int in_empty = 0;
 	size_t start = 0;
-	
+
 	size_t id_offset, id_end;
-	
+
 	/* up to 3 optional leading spaces */
 	if (beg + 3 >= end) return 0;
 	if (data[beg] == ' ') { i = 1;
@@ -2431,7 +2431,7 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 	if (data[beg + 2] == ' ') { i = 3;
 	if (data[beg + 3] == ' ') return 0; } } }
 	i += beg;
-	
+
 	/* id part: caret followed by anything between brackets */
 	if (data[i] != '[') return 0;
 	i++;
@@ -2442,10 +2442,10 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 		i++;
 	if (i >= end || data[i] != ']') return 0;
 	id_end = i;
-	
+
 	/* spacer: colon (space | tab)* newline? (space | tab)* */
 	i++;
-	if (i >= end || data[i] != ':') return 0; 
+	if (i >= end || data[i] != ':') return 0;
 	i++;
 	while (i < end && data[i] == ' ') i++;
 	if (i < end && (data[i] == '\n' || data[i] == '\r')) {
@@ -2454,16 +2454,16 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 	}
 	while (i < end && data[i] == ' ') i++;
 	if (i >= end || data[i] == '\n' || data[i] == '\r') return 0;
-	
+
 	/* getting content buffer */
 	contents = bufnew(64);
-	
+
 	start = i;
-	
+
 	/* process lines similiar to a list item */
 	while (i < end) {
 		while (i < end && data[i] != '\n' && data[i] != '\r') i++;
-		
+
 		/* process an empty line */
 		if (is_empty(data + start, i - start)) {
 			in_empty = 1;
@@ -2474,12 +2474,12 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 			start = i;
 			continue;
 		}
-	
+
 		/* calculating the indentation */
 		ind = 0;
 		while (ind < 4 && start + ind < end && data[start + ind] == ' ')
 			ind++;
-	
+
 		/* joining only indented stuff after empty lines;
 		 * note that now we only require 1 space of indentation
 		 * to continue, just like lists */
@@ -2489,9 +2489,9 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 		else if (in_empty) {
 			bufputc(contents, '\n');
 		}
-	
+
 		in_empty = 0;
-	
+
 		/* adding the line into the content buffer */
 		bufput(contents, data + start + ind, i - start - ind);
 		/* add carriage return */
@@ -2504,10 +2504,10 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 		}
 		start = i;
 	}
-	
+
 	if (last)
 		*last = start;
-	
+
 	if (list) {
 		struct footnote_ref *ref;
 		ref = create_footnote_ref(list, data + id_offset, id_end - id_offset);
@@ -2519,7 +2519,7 @@ is_footnote(const uint8_t *data, size_t beg, size_t end, size_t *last, struct fo
 		}
 		ref->contents = contents;
 	}
-	
+
 	return 1;
 }
 
@@ -2799,7 +2799,7 @@ sd_markdown_render(struct buf *ob, const uint8_t *document, size_t doc_size, str
 
 		parse_block(ob, md, text->data, text->size);
 	}
-	
+
 	/* footnotes */
 	if (footnotes_enabled)
 		parse_footnote_list(ob, md, &md->footnotes_used);
